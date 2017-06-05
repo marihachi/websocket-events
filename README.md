@@ -27,7 +27,8 @@ server.on('request', request => {
 	});
 
 	// use here
-	events(connection);
+	const options = {};
+	events(connection, options);
 
 	connection.on('user-event', data => {
 		console.log('user-event:', data);
@@ -41,6 +42,15 @@ server.on('request', request => {
 });
 ```
 :bulb: The example is used on the server, but it can also be used on the client.
+
+## Usable Options
+### keys.eventName
+The name used as key of event name.
+Default is `name`.
+
+### keys.eventContent
+The name used as key of event content.
+Default is `content`.
 
 ## License
 MIT
