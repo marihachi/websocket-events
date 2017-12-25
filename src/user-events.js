@@ -4,7 +4,9 @@ const globalOptions = {
 	keys: {
 		eventName: 'name',
 		eventContent: 'content'
-	}
+	},
+	debug: false,
+	defaultEventName: 'default'
 };
 
 const coreEventNames = [
@@ -30,7 +32,13 @@ const validateUserEvent = (event) => {
 const parse = (json) => {
 	const {eventName, eventContent} = globalOptions.keys;
 
-	const event = JSON.parse(json);
+	let event;
+	try {
+		event = JSON.parse(json);
+	}
+	catch(err) {
+		throw new Error(`invalid json: ${json}`);
+	}
 
 	if (event[eventName] == null || event[eventContent] == null || typeof event[eventName] != 'string') {
 		throw new Error('invalid event data');
@@ -53,16 +61,21 @@ module.exports = (connection, options) => {
 	}
 
 	connection.on('message', message => {
-		if (message.type === 'utf8') {
-			try {
+		try {
+			if (message.type === 'utf8') {
 				const event = parse(message.utf8Data);
 				validateUserEvent(event);
-				connection.emit(event[globalOptions.keys.eventName], event[globalOptions.keys.eventContent]);
+				if (connection.listenerCount(event[globalOptions.keys.eventName]) != 0) {
+					connection.emit(event[globalOptions.keys.eventName], event[globalOptions.keys.eventContent]);
+				}
+				else {
+					connection.emit(globalOptions.defaultEventName, event);
+				}
 			}
-			catch (err) {
-				console.log('error');
-				console.dir(err);
-			}
+		}
+		catch(err) {
+			if (globalOptions.debug)
+				console.log(err);
 		}
 	});
 

@@ -1,14 +1,14 @@
 {
   "name": "websocket-events",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "user events for WebSocket-Node",
-  "main": "./built/index.js",
+  "main": "./index.js",
   "scripts": {
-    "install": "npm run rebuild",
-    "build": "babel src --out-dir built",
-    "clean": "rimraf ./built",
+    "prepublish": "npm run rebuild",
+    "build": "babel src --out-dir lib",
+    "clean": "rimraf ./lib",
     "rebuild": "npm run clean && npm run build",
-    "test:lint": "eslint ./**/*.js",
+    "test:lint": "eslint ./src/**/*.js",
     "test:mocha": "mocha",
     "test": "npm run test:lint && npm run test:mocha"
   },
@@ -18,21 +18,23 @@
     "url": "https://github.com/marihachi/websocket-events.git"
   },
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-preset-es2015": "^6.24.1",
-    "rimraf": "^2.6.1"
-  },
-  "devDependencies": {
-    "eslint": "^4.4.1",
+    "rimraf": "^2.6.1",
+    "eslint": "^4.14.0",
     "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-node": "^5.1.1",
-    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
-    "mocha": "^3.5.0"
+    "mocha": "^4.0.1"
   },
   "files": [
-    "*"
+    "lib",
+    "index.js",
+    "LICENSE",
+    "package.json",
+    "README.md"
   ]
 }

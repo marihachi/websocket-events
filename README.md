@@ -11,7 +11,7 @@ user events for [WebSocket-Node](https://github.com/theturtle32/WebSocket-Node) 
 const websocket = require('websocket');
 const events = require('websocket-events');
 
-/* -- http server creation is omitted -- */
+/* -- instance creation of http.Server is omitted -- */
 
 const server = new websocket.server({httpServer: http});
 
@@ -34,8 +34,13 @@ server.on('request', request => {
 		console.log('user-event:', data);
 	});
 
+	// this listener is only used when not set listeners
+	connection.on('default', event => {
+		console.log('default listener:', event.name, event.content);
+	});
+
 	// send user event as message of json data
-	connection.send('user-event', {hoge: 'piyo'});
+	connection.send('user-event', { hoge: 'piyo' });
 
 	// send normal text message
 	connection.send('normal message');
@@ -46,11 +51,15 @@ server.on('request', request => {
 ## Usable Options
 ### keys.eventName
 The name used as key of event name.
-Default is `name`.
+Default value is `name`.
 
 ### keys.eventContent
 The name used as key of event content.
-Default is `content`.
+Default value is `content`.
+
+### defaultEventName
+Name of event used when not set event listeners.
+Default value is `default`.
 
 ## License
 MIT

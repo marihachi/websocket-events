@@ -1,6 +1,5 @@
 node_modules
-built
-assets
+lib
 .idea
 .vscode
 *.log
