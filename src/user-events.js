@@ -2,10 +2,9 @@
 
 const globalOptions = {
 	keys: {
-		eventName: 'name',
-		eventContent: 'content'
+		eventName: 'type',
+		eventContent: 'data'
 	},
-	debug: false,
 	defaultEventName: 'default'
 };
 
@@ -30,13 +29,13 @@ const validateUserEvent = (event) => {
 };
 
 const parse = (json) => {
-	const {eventName, eventContent} = globalOptions.keys;
+	const { eventName, eventContent } = globalOptions.keys;
 
 	let event;
 	try {
 		event = JSON.parse(json);
 	}
-	catch(err) {
+	catch (err) {
 		throw new Error(`invalid json: ${json}`);
 	}
 
@@ -61,21 +60,25 @@ module.exports = (connection, options) => {
 	}
 
 	connection.on('message', message => {
-		try {
-			if (message.type === 'utf8') {
-				const event = parse(message.utf8Data);
+		if (message.type === 'utf8') {
+
+			let event;
+			try {
+				event = parse(message.utf8Data);
 				validateUserEvent(event);
-				if (connection.listenerCount(event[globalOptions.keys.eventName]) != 0) {
-					connection.emit(event[globalOptions.keys.eventName], event[globalOptions.keys.eventContent]);
-				}
-				else {
-					connection.emit(globalOptions.defaultEventName, event);
-				}
 			}
-		}
-		catch(err) {
-			if (globalOptions.debug)
-				console.log(err);
+			catch (err) {
+				err.userEventError = true;
+				connection.emit('error', err);
+				return;
+			}
+
+			if (connection.listenerCount(event[globalOptions.keys.eventName]) != 0) {
+				connection.emit(event[globalOptions.keys.eventName], event[globalOptions.keys.eventContent]);
+			}
+			else {
+				connection.emit(globalOptions.defaultEventName, event);
+			}
 		}
 	});
 

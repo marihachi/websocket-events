@@ -4,7 +4,7 @@ user events for [WebSocket-Node](https://github.com/theturtle32/WebSocket-Node) 
 [![NPM](https://nodei.co/npm/websocket-events.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/websocket-events/)
 
 ## Installation
-	npm install websocket-events --save
+	npm i websocket-events
 
 ## Usage
 ```js
@@ -19,7 +19,12 @@ server.on('request', request => {
 	const connection = request.accept();
 
 	connection.on('error', err => {
-		console.log('error:', err);
+		if (err.userEventError) {
+			console.log('user event error:', err);
+		}
+		else {
+			console.log('error:', err);
+		}
 	});
 
 	connection.on('close', (reasonCode, description) => {
@@ -51,14 +56,14 @@ server.on('request', request => {
 ## Usable Options
 ### keys.eventName
 The name used as key of event name.
-Default value is `name`.
+Default value is `type`.
 
 ### keys.eventContent
 The name used as key of event content.
-Default value is `content`.
+Default value is `data`.
 
 ### defaultEventName
-Name of event used when not set event listeners.
+The name used when event listeners is not set.
 Default value is `default`.
 
 ## License
