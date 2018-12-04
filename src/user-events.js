@@ -1,10 +1,7 @@
 'use strict';
 
 const globalOptions = {
-	keys: {
-		eventName: 'type',
-		eventContent: 'data'
-	},
+	eventKeyName: '@event',
 	defaultEventName: 'default'
 };
 
@@ -20,16 +17,16 @@ const coreEventNames = [
 	'message'
 ];
 
-const validateUserEvent = (event) => {
-	if (coreEventNames.some(i => i == event[globalOptions.keys.eventName])) {
-		throw new Error('invalid event name');
-	}
+function isObject(v) {
+	return (v != null && typeof v == 'object' && !Array.isArray(v));
+}
 
-	return true;
-};
+function isString(v) {
+	return (typeof v == 'string');
+}
 
-const parse = (json) => {
-	const { eventName, eventContent } = globalOptions.keys;
+function parse(json) {
+	const { eventKeyName } = globalOptions;
 
 	let event;
 	try {
@@ -39,46 +36,61 @@ const parse = (json) => {
 		throw new Error(`invalid json: ${json}`);
 	}
 
-	if (event[eventName] == null || event[eventContent] == null || typeof event[eventName] != 'string') {
+	if (!isObject(event) || !isString(event[eventKeyName])) {
 		throw new Error('invalid event data');
 	}
 
 	return event;
-};
+}
 
-const serialize = (eventName, content) => {
+function validateUserEvent(event) {
+	if (coreEventNames.some(i => i == event[globalOptions.eventKeyName])) {
+		throw new Error('invalid event name');
+	}
+
+	return true;
+}
+
+function serialize(eventName, content) {
 	const event = {};
-	event[globalOptions.keys.eventName] = eventName;
-	event[globalOptions.keys.eventContent] = content;
+	Object.assign(event, content);
+	event[globalOptions.eventKeyName] = eventName;
 
 	return JSON.stringify(event);
-};
+}
 
 module.exports = (connection, options) => {
-	if (options != null && typeof options === 'object') {
+	if (isObject(options)) {
 		Object.assign(globalOptions, options);
 	}
 
 	connection.on('message', message => {
-		if (message.type === 'utf8') {
+		if (message.type != 'utf8') {
+			return;
+		}
 
-			let event;
-			try {
-				event = parse(message.utf8Data);
-				validateUserEvent(event);
-			}
-			catch (err) {
-				err.userEventError = true;
-				connection.emit('error', err);
-				return;
-			}
+		let event;
+		try {
+			event = parse(message.utf8Data);
+			validateUserEvent(event);
+		}
+		catch (err) {
+			err.userEventError = true;
+			connection.emit('error', err);
+			return;
+		}
 
-			if (connection.listenerCount(event[globalOptions.keys.eventName]) != 0) {
-				connection.emit(event[globalOptions.keys.eventName], event[globalOptions.keys.eventContent]);
-			}
-			else {
-				connection.emit(globalOptions.defaultEventName, event);
-			}
+		const eventContent = Object.assign({}, event);
+		delete eventContent[globalOptions.eventKeyName];
+
+		if (connection.listenerCount(event[globalOptions.eventKeyName]) != 0) {
+			connection.emit(event[globalOptions.eventKeyName], eventContent);
+		}
+		else {
+			connection.emit(globalOptions.defaultEventName, {
+				name: event[globalOptions.eventKeyName],
+				content: eventContent
+			});
 		}
 	});
 
@@ -88,7 +100,7 @@ module.exports = (connection, options) => {
 
 	connection._send = connection.send;
 	connection.send = (arg1, arg2, arg3) => {
-		const eventMode = typeof arg1 === 'string' && typeof arg2 !== 'function' && arg2 != null;
+		const eventMode = typeof arg1 == 'string' && typeof arg2 != 'function' && arg2 != null;
 		if (eventMode) {
 			connection.sendEvent(arg1, arg2, arg3);
 		}

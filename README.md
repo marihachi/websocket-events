@@ -54,13 +54,9 @@ server.on('request', request => {
 :bulb: The example is used on the server, but it can also be used on the client.
 
 ## Usable Options
-### keys.eventName
+### eventKeyName
 The name used as key of event name.
-Default value is `type`.
-
-### keys.eventContent
-The name used as key of event content.
-Default value is `data`.
+Default value is `@event`.
 
 ### defaultEventName
 The name used when event listeners is not set.

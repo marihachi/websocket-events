@@ -1,6 +1,6 @@
 {
   "name": "websocket-events",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "user events for WebSocket-Node",
   "main": "./index.js",
   "scripts": {
@@ -34,6 +34,7 @@
     "lib",
     "index.js",
     "LICENSE",
+    "CHANGELOG.md",
     "package.json",
     "README.md"
   ]
